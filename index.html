@@ -1,0 +1,100 @@
+<!-- index.html: Egzaminator Online - prosty symulator testu prawa jazdy kat. B -->
+});
+// offer further learning: link to ebook (placeholder)
+results.innerHTML += `<div style="margin-top:12px"><a href="#" style="color:var(--accent);font-weight:700">Sprawdź nasz e-book: Jak zdać egzamin</a></div>`;
+}
+
+
+function tick(){
+if(timeLeft<=0){
+clearInterval(timerInterval);
+alert('Czas minął — test zakończony.');
+showResults();
+return;
+}
+timeLeft--;
+updateTimerDisplay();
+}
+
+
+function updateTimerDisplay(){
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0')}
+timerEl.textContent = practiceMode ? '—' : fmt(timeLeft);
+timeTotal.textContent = practiceMode ? '—' : fmt(25*60);
+}
+
+
+function shuffleArray(a){
+const arr = a.slice();
+for(let i=arr.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[arr[i],arr[j]]=[arr[j],arr[i]];
+}
+return arr;
+}
+
+
+// keyboard navigation
+document.addEventListener('keydown', (e)=>{
+if(e.key === 'ArrowRight') nextBtn.click();
+if(e.key === 'ArrowLeft') prevBtn.click();
+if(e.key === 'Enter'){
+if(testArea.style.display==='none') startBtn.click();
+}
+});
+
+
+// Restore progress from localStorage (simple)
+window.addEventListener('beforeunload', ()=>{
+localStorage.setItem('egzaminator_answers', JSON.stringify(answers));
+});
+// try to load saved answers (optional)
+try{ const saved = JSON.parse(localStorage.getItem('egzaminator_answers')||'{}'); if(saved) answers=saved; }catch(e){}
+</script>
+
+
+<!--
+====== INSTRUKCJA (README) ======
+Plik zawiera kompletny prototyp aplikacji. Poniżej znajdziesz instrukcję, jak opublikować stronę na GitHub Pages (0 zł), jak dodać własną domenę i krótki opis rozbudowy.
+
+
+KROK 1 — Stwórz repozytorium na GitHub:
+1. Zaloguj się na github.com (jeśli nie masz konta, załóż darmowe).
+2. Stwórz nowe repozytorium np. "egzaminator-online".
+3. Dodaj plik index.html (taki jak powyżej). Możesz wkleić cały tekst HTML jako jeden plik.
+
+
+KROK 2 — Włącz GitHub Pages:
+1. W repo przejdź do Settings -> Pages.
+2. Wybierz branch: main (lub master) i folder: / (root).
+3. Zapisz. Po chwili strona będzie dostępna pod https://<twoj-login>.github.io/<nazwa-repo/>
+
+
+KROK 3 — (Opcjonalnie) własna domena:
+1. Kup domenę u wybranego rejestratora (np. OVH, home.pl, nazwa.pl).
+2. W ustawieniach GitHub Pages dodaj swoją domenę.
+3. U rejestratora ustaw rekordy DNS (A i/lub CNAME) zgodnie z instrukcją GitHub.
+
+
+KROK 4 — Statystyki i reklamy:
+- Google Analytics: dodaj kod śledzenia do <head> (planujemy po zaakceptowaniu polityki prywatności).
+- Google AdSense: wymaga własnej domeny, treści i przestrzegania zasad; proces zatwierdzenia może potrwać.
+
+
+KROK 5 — Rozbudowa i monetyzacja:
+- Dodaj więcej pytań: możesz przenieść QUESTIONS do osobnego pliku questions.json i ładować przez fetch.
+- Wersja Premium: stwórz prosty przycisk płatności (Gumroad/PayPal) i po opłaceniu podmieniaj listę pytań na pełną.
+- B2B: stwórz landing page dla OSK z ofertą licencji.
+
+
+UWAGI PRAWNE:
+- Pytania w tym pliku mają charakter ćwiczeniowy i zostały przygotowane tak, by nie naruszać praw autorskich oficjalnych arkuszy egzaminacyjnych. Jeśli chcesz używać oficjalnej bazy, sprawdź licencję i warunki WORD.
+
+
+Jeśli chcesz, mogę:
+- zrobić commit i opublikować stronę za Ciebie (jeśli podasz dostęp),
+- rozdzielić QUESTIONS do osobnego questions.json i dać instrukcję jak dodać tryb premium,
+- przygotować prosty formularz kontaktu i stronę sprzedażową (landing) dla OSK.
+-->
+</body>
+</html>
