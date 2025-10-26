@@ -1,317 +1,197 @@
-<!-- index.html: Egzaminator Online - prosty symulator testu prawa jazdy kat. B -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Egzaminator Online — Test prawa jazdy (symulator)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Egzaminator Online – Test na Prawo Jazdy</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--white:#e6eef6}
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#071029 0%, #071a2a 100%);color:var(--white);margin:0;padding:20px}
-    .wrap{max-width:900px;margin:16px auto}
-    header{display:flex;align-items:center;gap:12px}
-    header h1{font-size:20px;margin:0}
-    .card{background:rgba(255,255,255,0.03);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#042022;cursor:pointer;font-weight:600}
-    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
-    .question-area{margin-top:18px}
-    .q-title{font-size:18px;margin-bottom:10px}
-    .options{display:flex;flex-direction:column;gap:8px}
-    .opt{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-    .opt.selected{outline:3px solid rgba(6,182,212,0.16);background:rgba(6,182,212,0.06)}
-    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
-    .meta{color:var(--muted);font-size:14px}
-    .results{margin-top:16px}
-    .wrong{background:rgba(255,0,0,0.06);padding:10px;border-radius:8px;margin-top:8px}
-    .correct{background:rgba(0,255,0,0.04);padding:10px;border-radius:8px;margin-top:8px}
-    @media (max-width:600px){.wrap{padding:12px}}
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      color: #222;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .container {
+      width: 90%;
+      max-width: 600px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+    .question {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+    .answers button {
+      width: 100%;
+      background: #e9ecef;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .answers button:hover {
+      background: #d7e3f4;
+    }
+    .answers button.correct {
+      background: #28a745;
+      color: white;
+    }
+    .answers button.wrong {
+      background: #dc3545;
+      color: white;
+    }
+    .hidden {
+      display: none;
+    }
+    #next-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 1em;
+    }
+    #next-btn:hover {
+      background: #0056b3;
+    }
+    #result {
+      text-align: center;
+    }
+    #timer {
+      text-align: right;
+      font-weight: bold;
+      color: #444;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'><rect rx='6' width='24' height='24' fill='%2306b6d4'/><path d='M7 14l3-6 3 6 3-8 1 12H6l1-4z' fill='%230b1220'/></svg>" alt="logo" style="width:48px;height:48px;border-radius:8px">
-      <div>
-        <h1>Egzaminator Online — symulator testu</h1>
-        <div style="color:var(--muted);font-size:13px">Szybki test praktyczny przygotowany przez instruktora</div>
-      </div>
-    </header>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-        <div>
-          <div style="font-weight:700">Gotowy do testu?</div>
-          <div style="color:var(--muted);font-size:13px">Czas trwania: <span id="timeTotal">25:00</span> — 25 minut (symulacja)</div>
-        </div>
-        <div class="controls">
-          <button id="startBtn">Start</button>
-          <button class="secondary" id="practiceBtn">Tryb treningowy (bez limitu)</button>
-          <button class="secondary" id="shuffleBtn">Wymieszaj pytania</button>
-        </div>
-      </div>
-
-      <div id="testArea" class="question-area" style="display:none">
-        <div class="meta">Pytanie <span id="qIndex">1</span> / <span id="qTotal">1</span></div>
-        <div class="q-title" id="questionText">Tutaj pojawi się pytanie</div>
-        <div class="options" id="optionsList"></div>
-
-        <div class="footer">
-          <div style="display:flex;gap:8px">
-            <button id="prevBtn" class="secondary">Poprzednie</button>
-            <button id="nextBtn" class="secondary">Następne</button>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="meta">Czas: <span id="timer">25:00</span></div>
-            <button id="submitBtn">Zakończ test</button>
-          </div>
-        </div>
-
-        <div id="results" class="results" style="display:none"></div>
-      </div>
-
-      <div id="welcome" style="margin-top:16px">
-        <p style="color:var(--muted)">Przykładowy symulator testu. Pytania są przygotowane przez instruktora i mają charakter ćwiczeniowy — nie są kopiami oficjalnych arkuszy WORD. Powodzenia!</p>
-      </div>
+  <div class="container">
+    <h1>Egzaminator Online</h1>
+    <div id="intro">
+      <p>Rozpocznij darmowy test na prawo jazdy (10 pytań). Powodzenia!</p>
+      <button id="start-btn">Rozpocznij test</button>
     </div>
 
-    <div style="margin-top:12px;color:var(--muted);font-size:13px">Jeśli chcesz, mogę pomóc wystawić tę stronę na GitHub Pages lub dodać własną domenę.</div>
+    <div id="quiz" class="hidden">
+      <div id="timer"></div>
+      <div id="question-container"></div>
+      <div id="answers" class="answers"></div>
+      <button id="next-btn">Dalej</button>
+    </div>
+
+    <div id="result" class="hidden"></div>
+
+    <div id="locked-section" class="hidden">
+      <p>To tylko wersja demo (10 pytań). Odblokuj pełny test (50 pytań):</p>
+      <a href="https://gum.co/egzaminatorpro" target="_blank" class="unlock-btn">🔓 Kup pełny dostęp za 9,99 zł</a>
+    </div>
   </div>
 
   <script>
-    // ====== BAZA PYTAŃ ======
-    // Poniżej znajduje się gotowa baza pytań. Możesz ją rozbudować lub zapisać jako questions.json.
-    const QUESTIONS = [
-      {id:1, question:"Jakie zachowanie kierowcy jest wymagane przy zbliżaniu się do przejścia dla pieszych, gdzie pieszy stoi na krawężniku i wyraźnie zamierza wejść?", options:["Przyspieszyć, by przejechać szybciej","Zatrzymać się lub przygotować do zatrzymania, przepuścić pieszego","Objechać przejście, jeśli nie ma znaków"], answer:1, explanation:"Kierowca powinien zatrzymać się lub przygotować do zatrzymania i ustąpić pierwszeństwa pieszemu, jeśli ten zamierza wejść na przejście."},
-      {id:2, question:"Jak interpretujemy znak drogowy " + '"STOP"' + "?", options:["Informuje o zakazie wjazdu","Nakazuje całkowite zatrzymanie pojazdu przed wjazdem na skrzyżowanie","Oznacza pierwszeństwo na skrzyżowaniu"], answer:1, explanation:"Znak STOP nakazuje całkowite zatrzymanie pojazdu przed linią zatrzymania lub przed skrzyżowaniem i ustąpienie pierwszeństwa."},
-      {id:3, question:"Na drodze pokrytej lodem i śniegiem najbezpieczniejszą techniką hamowania jest:", options:["Silne hamowanie awaryjne","Hamowanie pulsacyjne (ABS pomaga) i utrzymywanie większej odległości","Hamowanie silniejszym pedałem gazu"], answer:1, explanation:"Na śliskiej nawierzchni należy zachować większą odległość i hamować płynnie; system ABS pomoże utrzymać sterowność."},
-      {id:4, question:"Światła mijania używane są w warunkach:", options:["Tylko w nocy","W nocy i przy zmniejszonej widoczności (mgła, deszcz, tunel)","Tylko w terenie zabudowanym"], answer:1, explanation:"Światła mijania używa się w nocy oraz przy zmniejszonej widoczności; są to standardowe dla jazdy w trudnych warunkach."},
-      {id:5, question:"Co oznacza znak A-7 (użyj intuicji, opisowy): 'ustąp pierwszeństwa'?", options:["Musisz się zatrzymać zawsze","Musisz zwolnić i ustąpić pierwszeństwa pojazdom na drodze z pierwszeństwem","Masz pierwszeństwo"], answer:1, explanation:"Znak ustąp pierwszeństwa oznacza konieczność zachowania szczególnej ostrożności i ustąpienia pierwszeństwa pojazdom na drodze z pierwszeństwem."},
-      {id:6, question:"Jak postąpić przy zjeździe z drogi ekspresowej na rondzie lub węźle?", options:["Zjechać szybko bez sygnalizacji","Zasygnalizować zamiar zjazdu i przyjąć odpowiednią prędkość","Zawsze zjechać na skrajny pas"], answer:1, explanation:"Na zjeździe należy zasygnalizować manewr i dostosować prędkość do warunków oraz oznakowania."},
-      {id:7, question:"Jaka jest bezpieczna odległość od poprzedzającego pojazdu w warunkach normalnych przy prędkości 90 km/h?", options:["Kilka metrów, by szybciej wyprzedzić","Odległość odpowiada co najmniej 2 sekundom czasu przejazdu","1 metr"], answer:1, explanation:"Zalecana odległość to co najmniej 2 sekundy w warunkach dobrej przyczepności; przy złych warunkach więcej."},
-      {id:8, question:"Czym jest martwe pole w samochodzie?", options:["Obszar widoczny w lusterku wstecznym","Fragment drogi za samochodem, którego kierowca nie widzi w lusterkach","Miejsce, gdzie nie można parkować"], answer:1, explanation:"Martwe pole to obszar wokół pojazdu, którego kierowca nie widzi w lusterkach i wymaga spojrzenia przez ramię."},
-      {id:9, question:"Czy wolno wyprzedzać na przejściu dla pieszych?", options:["Tak, jeśli pieszy nie stoi na przejściu","Nie, wyprzedzanie na przejściu jest zabronione","Tak, tylko pojazdy uprzywilejowane"], answer:1, explanation:"Wyprzedzanie na przejściu dla pieszych jest zabronione z uwagi na bezpieczeństwo."},
-      {id:10, question:"Podczas cofania kierowca powinien przede wszystkim:", options:["Cofnąć szybko, by nie blokować ruchu","Mieć osobę pomagającą lub dokładnie obserwować otoczenie i lusterka","Ignorować pieszych"], answer:1, explanation:"Cofanie wymaga szczególnej ostrożności: obserwacja luster, patrzenie przez ramię, poproszenie osoby do asekuracji jeśli to konieczne."},
-      {id:11, question:"Jak postąpić, gdy przy skrzyżowaniu sygnalizacja świetlna nie działa?", options:["Traktować skrzyżowanie jak zwykłe, stosując znaki","Stosować się do zasad pierwszeństwa i zachować szczególną ostrożność","Przejechać szybko zanim inni przyjadą"] , answer:1, explanation:"Gdy sygnalizacja nie działa, stosujemy zasady ruchu drogowego i znaki; często trzeba stosować zasadę prawej ręki oraz zachować ostrożność."},
-      {id:12, question:"Czy podczas wyprzedzania na dwukierunkowej drodze można przekroczyć linię ciągłą?", options:["Tak, jeśli droga jest pusta","Nie, przekraczanie linii ciągłej jest zabronione","Tak, tylko na krótkim odcinku"], answer:1, explanation:"Linia ciągła zabrania wyprzedzania i zmiany pasa; jej przekroczenie jest niedozwolone."},
-      {id:13, question:"W jakiej sytuacji używamy świateł awaryjnych?", options:["Gdy zatrzymujemy się z powodu awarii lub nagłego niebezpieczeństwa","Zawsze przy parkowaniu","Podczas skręcania w lewo"], answer:0, explanation:"Światła awaryjne sygnalizują innym uczestnikom ruchu awarię lub sytuację zagrożenia i używamy ich przy zatrzymaniu awaryjnym."},
-      {id:14, question:"Jak zachować się wobec rowerzysty podczas skrętu w prawo?", options:["Skręcić ostro i szybko, rowerzysta nie ma pierwszeństwa","Sprawdzić lusterka, zasygnalizować i ustąpić pierwszeństwa jeśli rowerzysta jedzie prosto lub zamierza skręcić","Wyprzedzić rowerzystę przed skrętem"], answer:1, explanation:"Należy brać pod uwagę rowerzystów, zasygnalizować zamiar skrętu i ustąpić pierwszeństwa, jeżeli to konieczne."},
-      {id:15, question:"Co to jest hamowanie awaryjne i kiedy się go używa?", options:["Delikatne hamowanie przy podjeżdżaniu pod górę","Mocne i nagłe hamowanie w celu uniknięcia kolizji","Hamowanie silnikiem na zjeździe"], answer:1, explanation:"Hamowanie awaryjne stosuje się przy bezpośrednim niebezpieczeństwie kolizji i wymaga zdecydowanego nacisku na pedał hamulca."},
-      {id:16, question:"Jakie dokumenty powinien mieć przy sobie kierowca podczas kontroli drogowej?", options:["Dowód osobisty tylko","Prawo jazdy i dokument pojazdu (dowód rejestracyjny) oraz dokument potwierdzający ubezpieczenie","Tylko karta paliwowa"], answer:1, explanation:"Kierowca powinien posiadać prawo jazdy, dowód rejestracyjny pojazdu i dokument potwierdzający obowiązkowe ubezpieczenie (OC)."},
-      {id:17, question:"Czy można parkować na chodniku jeśli szerokość chodnika pozwala?", options:["Tak, zawsze można","Parkowanie na chodniku jest dozwolone tylko jeśli znaki nie zabraniają i pozostawiona jest przestrzeń dla pieszych","Nie, parkowanie na chodniku jest zawsze zabronione"], answer:1, explanation:"Parkowanie na chodniku jest dozwolone tylko w określonych warunkach, gdy nie utrudnia ruchu pieszych i jeśli znaki nie zabraniają."},
-      {id:18, question:"Jaka jest właściwa pozycja rąk na kierownicy dla bezpiecznej jazdy?", options:["Trzymać kierownicę jedną ręką","Trzymać kierownicę obiema rękami na wysokości ok. 9 i 3 lub 10 i 2 godzin","Trzymać kierownicę na dole"], answer:1, explanation:"Najbezpieczniejsza pozycja to obie ręce na kierownicy (np. 9 i 3 lub 10 i 2), co zapewnia najlepszą kontrolę."},
-      {id:19, question:"Czy pieszy może przejść przez jezdnię w miejscu bez przejścia?", options:["Tak, zawsze","Pieszy może przechodzić poza przejściami, ale musi ustąpić pierwszeństwa pojazdom i zachować ostrożność","Nie, nigdy nie wolno"], answer:1, explanation:"Piesi mogą korzystać z jezdni poza przejściami, jednak mają obowiązek ustąpić pierwszeństwa pojazdom i zachować szczególną ostrożność."},
-      {id:20, question:"Co oznacza linia przerywana na środku jezdni?", options:["Można wyprzedzać i zmieniać pas ruchu","Zabrania wyprzedzania","Oznacza koniec pasa ruchu"], answer:0, explanation:"Linia przerywana pozwala na zmianę pasa i wyprzedzanie, jeśli warunki są bezpieczne."},
-      {id:21, question:"Jak zachować się na rondzie bez znaków uprzywilejowania?", options:["Zawsze wjeżdżamy bez zatrzymania","Stosujemy zasadę prawej ręki i ustępujemy pierwszeństwa pojazdom znajdującym się na rondzie","Zawsze mamy pierwszeństwo"], answer:1, explanation:"Na rondzie obowiązuje ustąpienie pierwszeństwa pojazdom znajdującym się już na rondzie, chyba że znaki mówią inaczej."},
-      {id:22, question:"Co robić, gdy samochód zacznie aquaplanować (traci przyczepność na wodzie)?", options:["Przyspieszyć, żeby wyjść z efektu","Odjąć gaz i delikatnie hamować (jeśli to konieczne), nie gwałtownie skręcać","Zaraz skręcić kierownicą ostro"], answer:1, explanation:"W przypadku aquaplaningu lepiej zdjąć nogę z gazu, utrzymać kierunek i delikatnie hamować; gwałtowne ruchy zwiększają ryzyko utraty kontroli."},
-      {id:23, question:"Jak zachować się w obecności pojazdu uprzywilejowanego jadącego z włączonymi sygnałami świetlnymi i dźwiękowymi?", options:["Kontynuować jazdę bez zmian","Ustąpić mu pierwszeństwa i umożliwić przejazd, zjeżdżając na bok jeśli trzeba","Zablokować drogę"], answer:1, explanation:"Należy jak najszybciej i bezpiecznie umożliwić przejazd pojazdowi uprzywilejowanemu."},
-      {id:24, question:"Czy w terenie zabudowanym obowiązuje ograniczenie prędkości 50 km/h?", options:["Tak, chyba że znaki mówią inaczej","Nie, zawsze można jechać 60 km/h","To zależy od godziny dnia"], answer:0, explanation:"Standardowe ograniczenie prędkości w terenie zabudowanym to 50 km/h, chyba że znaki określają inną wartość."},
-      {id:25, question:"Jakie jest główne znaczenie linii podwójnej ciągłej?", options:["Można ją przekroczyć, jeśli nikt nie jedzie z naprzeciwka","Zabrania wyprzedzania i nie wolno jej przekraczać","Oznacza strefę parkowania"], answer:1, explanation:"Podwójna linia ciągła zabrania przekraczania jej i wyprzedzania; jest stosowana tam, gdzie widoczność jest ograniczona."},
-      {id:26, question:"Kiedy stosujemy hamowanie silnikiem?", options:["Tylko podczas przyspieszania","Podczas zwalniania, aby wspomóc hamowanie i oszczędzić hamulce","Nigdy"], answer:1, explanation:"Hamowanie silnikiem stosuje się podczas zwalniania, zwłaszcza na zjazdach, żeby zmniejszyć zużycie hamulców."},
-      {id:27, question:"Jakie jest znaczenie znaku informacyjnego z literą " + 'P' + "?", options:["Zakaz parkowania","Miejsce przeznaczone do parkowania","Parking dla autobusów"], answer:1, explanation:"Znak z literą P oznacza miejsce parkingowe; dodatkowe tabliczki precyzują warunki."},
-      {id:28, question:"Czy można używać telefonu komórkowego podczas prowadzenia pojazdu?", options:["Tak, bez ograniczeń","Tylko z zestawem głośnomówiącym lub gdy telefon jest unieruchomiony","Tylko podczas skrętu"], answer:1, explanation:"Korzystanie z telefonu trzymanego w ręku podczas jazdy jest zabronione; dozwolone jest używanie zestawu głośnomówiącego."},
-      {id:29, question:"Jaka jest najbezpieczniejsza metoda wyprzedzania na drodze dwukierunkowej?", options:["Wyprzedzać na łuku drogi","Wyprzedzać na prostym odcinku, upewniając się, że jest dość miejsca i dobra widoczność","Wyprzedzać zawsze z lewej strony"], answer:1, explanation:"Wyprzedzanie powinno odbywać się na prostym odcinku, przy dobrej widoczności i wystarczającej długości drogi."},
-      {id:30, question:"Jak przygotować samochód do jazdy zimą przed wyruszeniem w trasę?", options:["Sprawdzić poziom płynu chłodzącego i oleju oraz ciśnienie w oponach, mieć odpowiednie opony zimowe","Tylko umyć samochód","Zlać olej silnikowy"], answer:0, explanation:"Zimą ważne jest sprawdzenie płynów, stanu opon i ciśnienia oraz wyposażenia awaryjnego."},
-      {id:31, question:"Czy dopuszczalne jest holowanie samochodu z przodu na krótkim dystansie bez sygnalizacji?", options:["Tak, bez sygnalizacji","Holowanie wymaga stosownej sygnalizacji i warunków zgodnych z przepisami","Holowanie jest zawsze zakazane"], answer:1, explanation:"Holowanie pojazdu wymaga właściwego zabezpieczenia, łącznika i sygnalizacji oraz zgodności z przepisami."},
-      {id:32, question:"Jak zachować się, gdy w tunelu zapala się kontrolka awaryjna silnika?", options:["Zatrzymać się natychmiast na środku tunelu","Zjechać możliwie bezpiecznie na pobocze lub miejsce awaryjne i wyłączyć silnik","Kontynuować jazdę do końca tunelu"], answer:1, explanation:"W razie awarii trzeba jak najszybciej zatrzymać pojazd w miejscu bezpiecznym i wyłączyć silnik, informując służby jeśli potrzeba."},
-      {id:33, question:"Czy przewożenie dzieci bez fotelika jest dozwolone?", options:["Tak, jeśli dziecko jest małe","Nie, dzieci muszą być przewożone zgodnie z przepisami i w odpowiednich fotelikach lub pasach","Tylko na krótkim dystansie"], answer:1, explanation:"Dzieci powinny być przewożone w odpowiednich fotelikach lub z adapterami dopasowanymi do ich wzrostu i wagi."},
-      {id:34, question:"Jaka jest zasada '2 sekund' w prowadzeniu pojazdu?", options:["Odległość mierzona w sekundach między pojazdami, której należy przestrzegać","Czas, jaki zajmuje zapalenie światła","Czas trwania sygnału świetlnego"], answer:0, explanation:"Zasada 2 sekund pomaga ocenić bezpieczną odległość do poprzedzającego pojazdu w normalnych warunkach."},
-      {id:35, question:"Na drodze o dwóch pasach w jednym kierunku, czy można wyprzedzać z prawego pasa?", options:["Tak, zawsze","Tak, jeśli pas z lewej wolny i znaki nie zabraniają","Nie, wyprzedzanie prawym pasem jest zawsze zabronione"], answer:1, explanation:"Wyprzedzanie z prawego pasa jest dozwolone, jeśli pas z lewej jest wolny i nie ma zakazu; wymaga jednak ostrożności."},
-      {id:36, question:"Co to jest 'strefa zamieszkania' i jakie zasady tam obowiązują?", options:["Miejsce parkingowe","Przestrzeń, gdzie piesi mają priorytet i obowiązuje ograniczenie prędkości do niskiej wartości","Autostrada"], answer:1, explanation:"W strefie zamieszkania piesi mają priorytet, dzieci mogą bawić się na jezdni, a prędkość jest ograniczona do niskiej wartości (np. 20 km/h)."},
-      {id:37, question:"Jak poprawnie wykonać manewr zawracania na skrzyżowaniu?", options:["Zawracać powoli bez zwracania uwagi na innych","Sprawdzić znaki, zasygnalizować zamiar, upewnić się, że manewr jest dozwolony i bezpieczny","Zawracać z każdego pasa"], answer:1, explanation:"Zawracanie wymaga sprawdzenia oznakowania, zasygnalizowania i upewnienia się, że manewr nie zagraża innym użytkownikom drogi."},
-      {id:38, question:"Czy można przewozić ładunek wystający poza obrys pojazdu bez oznaczeń?", options:["Tak, jeśli to krótki odcinek","Nie, ładunek wystający musi być odpowiednio oznakowany i zabezpieczony","Tak, jeśli nikt nie patrzy"], answer:1, explanation:"Ładunek wystający musi być odpowiednio zabezpieczony i oznakowany zgodnie z przepisami."},
-      {id:39, question:"Które światła należy włączyć podczas postoju na poboczu w nocy?", options:["Światła mijania","Światła pozycyjne oraz światła awaryjne, jeśli pojazd utrudnia ruch","Tylko światła drogowe"], answer:1, explanation:"Jeśli pojazd stoi na poboczu i utrudnia ruch, należy włączyć światła pozycyjne; przy awarii używamy świateł awaryjnych."},
-      {id:40, question:"Jakie są najlepsze praktyki przy nauce parkowania równoległego?", options:["Nie trzeba patrzeć przez lusterka","Ustawić samochód równolegle, obserwować lusterka i wykonywać manewry powoli","Parkować na pamięć"], answer:1, explanation:"Parkowanie równoległe wymaga użycia lusterek, powolnych ruchów i praktyki, by nauczyć się kątów wejścia."},
-      {id:41, question:"Czy przejeżdżanie na czerwonym świetle jest dozwolone dla skręcających w prawo (tam, gdzie prawo dopuszcza)?", options:["Tak, zawsze można skręcić na czerwonym","Można skręcić na czerwonym tylko jeśli jest dodatkowa strzałka lub znak pozwalający","Tak, jeśli nie ma pieszych"], answer:1, explanation:"Skręt na czerwonym jest dozwolony tylko tam, gdzie jest odpowiednia sygnalizacja (zielona strzałka) lub znak pozwalający."},
-      {id:42, question:"Jak reagować, gdy zauważysz, że kierowca przed Tobą nagle hamuje?", options:["Skręcić na bok","Zachować odległość i hamować płynnie, aby uniknąć kolizji","Dzieć wiadrem w slalomie"], answer:1, explanation:"Należy zachować odległość i hamować płynnie; ostre manewry mogą pogorszyć sytuację."},
-      {id:43, question:"Co oznacza żółte migające światło na skrzyżowaniu?", options:["Zakaz wjazdu","Ostrzeżenie i przejazd z zachowaniem szczególnej ostrożności","Pierwszeństwo dla pojazdów z prawej"], answer:1, explanation:"Żółte migające światło ostrzega i nakazuje zachowanie szczególnej ostrożności; zwykle ruch odbywa się według zasad pierwszeństwa."},
-      {id:44, question:"Jakie wyposażenie obowiązkowo powinno być w samochodzie?", options:["Aparat fotograficzny","Apteczka, trójkąt ostrzegawczy i gaśnica (w zależności od wymogów kraju)","Kanapa dodatkowa"], answer:1, explanation:"W samochodzie powinny znaleźć się obowiązkowe elementy wyposażenia takie jak apteczka, trójkąt ostrzegawczy i inne wymagane przepisami."},
-      {id:45, question:"Czy można korzystać z pasów bezpieczeństwa podczas jazdy z przyczepą?", options:["Nie, pasy nie są wymagane","Tak, pasy bezpieczeństwa są obowiązkowe dla kierowcy i pasażerów","Tylko kierowca musi mieć pas"], answer:1, explanation:"Pasy bezpieczeństwa są obowiązkowe dla kierowcy i pasażerów pojazdu, niezależnie od tego, czy holowana jest przyczepa."},
-      {id:46, question:"Jak zachować się, gdy za Tobą jedzie pojazd uprzywilejowany i sygnalizuje chęć wyprzedzenia?", options:["Przyspieszyć, by nie dopuścić do wyprzedzenia","Ustąpić miejsca i ułatwić mu manewr wyprzedzania" ,"Zjechać na przeciwny pas"], answer:1, explanation:"Należy umożliwić wyprzedzanie pojazdowi uprzywilejowanemu, jeśli to bezpieczne."},
-      {id:47, question:"Co robić, gdy widzisz zwierzęta na drodze?", options:["Jechać dalej bez zmian","Zwolnić, zachować ostrożność i w razie potrzeby zatrzymać się","Trąbić długo i przyspieszać"], answer:1, explanation:"Wobec zwierząt na drodze należy zmniejszyć prędkość i zachować szczególną ostrożność."},
-      {id:48, question:"Jak sprawdzić ciśnienie w oponach?", options:["Na oko","Użyć manometru i porównać z zaleceniami producenta","Uderzyć opona palcem"], answer:1, explanation:"Ciśnienie w oponach mierzymy manometrem i ustawiamy zgodnie z instrukcjami producenta pojazdu."},
-      {id:49, question:"Czy użycie klaksonu w obszarze zabudowanym jest dozwolone o każdej porze?", options:["Tak, klakson można używać bez ograniczeń","Klakson używamy tylko w razie realnego niebezpieczeństwa; w obszarach zabudowanych używanie bez potrzeby jest zabronione","Klakson służy do pozdrawiania"], answer:1, explanation:"Klakson powinien być używany tylko w celu ostrzeżenia o bezpośrednim niebezpieczeństwie; nie należy go nadużywać w obszarach zabudowanych."},
-      {id:50, question:"Jak zachować się przy wymuszonym postoju na autostradzie?", options:["Zostać w samochodzie i czekać","Zjechać na pas awaryjny, włączyć światła awaryjne, założyć kamizelkę odblaskową (jeśli opuszczasz pojazd) i ustawić trójkąt ostrzegawczy zgodnie z przepisami","Zostawić pojazd na środku pasa"], answer:1, explanation:"W przypadku postoju na autostradzie należy zjechać na pas awaryjny, włączyć światła awaryjne i zabezpieczyć miejsce zgodnie z przepisami."}
+    const DEMO_QUESTIONS = [
+      {q:"Co oznacza ten znak?",a:["Zakaz wjazdu","Droga z pierwszeństwem","Droga bez przejazdu"],c:0},
+      {q:"Kiedy wolno używać klaksonu?",a:["Zawsze gdy chcemy","Tylko w razie zagrożenia","Nigdy"],c:1},
+      {q:"Jaki jest dopuszczalny poziom alkoholu we krwi kierowcy?",a:["0,2‰","0,5‰","0,0‰"],c:0},
+      {q:"Na drodze jednokierunkowej można:",a:["Cofnąć jeśli nikomu nie przeszkadzamy","Zawracać w dowolnym miejscu","Zatrzymać się na środku"],c:0},
+      {q:"Znak STOP oznacza:",a:["Zatrzymaj się tylko gdy coś jedzie","Zawsze zatrzymaj się przed linią","Zwolnij i jedź dalej"],c:1},
+      {q:"Kiedy należy włączyć światła mijania?",a:["Tylko w nocy","Zawsze w czasie jazdy","Tylko przy złej pogodzie"],c:1},
+      {q:"Czy można korzystać z telefonu podczas jazdy?",a:["Tak, jeśli trzymamy w ręce","Nie, chyba że przez zestaw głośnomówiący","Tak, zawsze"],c:1},
+      {q:"Jak zachować się przy karetce na sygnale?",a:["Przyspieszyć","Zatrzymać się w miejscu","Ustąpić jej pierwszeństwa"],c:2},
+      {q:"Co należy zrobić widząc znak ustąp pierwszeństwa?",a:["Zatrzymać się","Zachować ostrożność i ustąpić","Przyspieszyć"],c:1},
+      {q:"Jak długo trwa ważność badań lekarskich dla kierowcy kat. B?",a:["Dożywotnio","10 lat","5 lat"],c:1}
     ];
-    // ====== KONIEC BAZY PYTAŃ ======
 
-    // ====== LOGIKA APLIKACJI ======
-    let shuffled = [];
-    let currentIndex = 0;
-    let answers = {}; // id -> chosen index
-    let timerInterval = null;
-    let timeLeft = 25*60; // 25 min default
-    let practiceMode = false;
-
-    const startBtn = document.getElementById('startBtn');
-    const practiceBtn = document.getElementById('practiceBtn');
-    const shuffleBtn = document.getElementById('shuffleBtn');
-    const testArea = document.getElementById('testArea');
-    const welcome = document.getElementById('welcome');
-    const qIndex = document.getElementById('qIndex');
-    const qTotal = document.getElementById('qTotal');
-    const questionText = document.getElementById('questionText');
-    const optionsList = document.getElementById('optionsList');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const results = document.getElementById('results');
-    const timerEl = document.getElementById('timer');
-    const timeTotal = document.getElementById('timeTotal');
-    const qTotalEl = document.getElementById('qTotal');
-
-    function initTest(){
-      shuffled = QUESTIONS.slice();
-      // default: 25 questions from pool or full depending on pool size
-      if(shuffled.length > 25) shuffled = shuffleArray(shuffled).slice(0,25);
-      else shuffled = shuffleArray(shuffled);
-      currentIndex = 0;
-      answers = {};
-      qTotalEl.textContent = shuffled.length;
-      qTotal.textContent = shuffled.length;
-      timeLeft = practiceMode ? 0 : 25*60;
-      updateTimerDisplay();
-      clearInterval(timerInterval);
-      if(!practiceMode) timerInterval = setInterval(tick,1000);
-      renderQuestion();
-      testArea.style.display = '';
-      welcome.style.display = 'none';
-      results.style.display = 'none';
-      document.getElementById('results').innerHTML = '';
+    const unlocked = window.location.href.includes("premium");
+    const QUESTIONS = unlocked ? DEMO_QUESTIONS.concat(DEMO_QUESTIONS, DEMO_QUESTIONS, DEMO_QUESTIONS, DEMO_QUESTIONS) : DEMO_QUESTIONS;
+    
+    const startBtn = document.getElementById("start-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const quiz = document.getElementById("quiz");
+    const intro = document.getElementById("intro");
+    const resultDiv = document.getElementById("result");
+    const questionContainer = document.getElementById("question-container");
+    const answersDiv = document.getElementById("answers");
+    const locked = document.getElementById("locked-section");
+    const timerDiv = document.getElementById("timer");
+    
+    let current = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = unlocked ? 1500 : 600; // 25min lub 10min
+    
+    startBtn.onclick = startQuiz;
+    nextBtn.onclick = nextQuestion;
+    
+    function startQuiz(){
+      intro.classList.add("hidden");
+      quiz.classList.remove("hidden");
+      showQuestion();
+      timer = setInterval(updateTimer, 1000);
     }
 
-    function renderQuestion(){
-      const q = shuffled[currentIndex];
-      qIndex.textContent = currentIndex+1;
-      questionText.textContent = q.question;
-      optionsList.innerHTML = '';
-      q.options.forEach((opt, i)=>{
-        const div = document.createElement('div');
-        div.className = 'opt' + (answers[q.id] === i ? ' selected' : '');
-        div.textContent = opt;
-        div.addEventListener('click', ()=>{
-          answers[q.id] = i;
-          renderQuestion();
-        });
-        optionsList.appendChild(div);
-      });
-    }
-
-    prevBtn.addEventListener('click', ()=>{ if(currentIndex>0){currentIndex--;renderQuestion()} });
-    nextBtn.addEventListener('click', ()=>{ if(currentIndex<shuffled.length-1){currentIndex++;renderQuestion()} });
-    shuffleBtn.addEventListener('click', ()=>{ QUESTIONS.reverse(); alert('Pula pytań została wymieszana.'); });
-
-    startBtn.addEventListener('click', ()=>{ practiceMode=false; initTest(); });
-    practiceBtn.addEventListener('click', ()=>{ practiceMode=true; initTest(); });
-
-    submitBtn.addEventListener('click', ()=>{ if(confirm('Czy chcesz zakończyć test i zobaczyć wynik?')) showResults(); });
-
-    function showResults(){
-      clearInterval(timerInterval);
-      const total = shuffled.length;
-      let correct = 0;
-      const wrongList = [];
-      shuffled.forEach(q=>{
-        const chosen = answers[q.id];
-        if(typeof chosen === 'number' && chosen === q.answer) correct++;
-        else wrongList.push({q, chosen});
-      });
-      const percent = Math.round(correct/total*100);
-      results.style.display = '';
-      results.innerHTML = `<div style="font-weight:800;font-size:18px">Wynik: ${correct} / ${total} (${percent}%)</div>`;
-      if(wrongList.length===0) results.innerHTML += `<div style="margin-top:8px;color:var(--muted)">Brawo! Wszystkie odpowiedzi poprawne.</div>`;
-      wrongList.forEach(item=>{
-        const block = document.createElement('div');
-        block.className = 'wrong';
-        block.innerHTML = `<div style="font-weight:700">${item.q.question}</div>` +
-                          `<div style="margin-top:6px">Twoja odpowiedź: ${typeof item.chosen==='number'? item.q.options[item.chosen] : '<i>brak odpowiedzi</i>'}</div>` +
-                          `<div style="margin-top:6px;color:var(--muted)"><b>Poprawna:</b> ${item.q.options[item.q.answer]}</div>` +
-                          `<div style="margin-top:6px;color:var(--muted)">${item.q.explanation}</div>`;
-        results.appendChild(block);
-      });
-      // offer further learning: link to ebook (placeholder)
-      results.innerHTML += `<div style="margin-top:12px"><a href="#" style="color:var(--accent);font-weight:700">Sprawdź nasz e-book: Jak zdać egzamin</a></div>`;
-    }
-
-    function tick(){
-      if(timeLeft<=0){
-        clearInterval(timerInterval);
-        alert('Czas minął — test zakończony.');
-        showResults();
-        return;
-      }
+    function updateTimer(){
       timeLeft--;
-      updateTimerDisplay();
+      if(timeLeft <= 0){ endQuiz(); }
+      const min = Math.floor(timeLeft / 60);
+      const sec = timeLeft % 60;
+      timerDiv.textContent = `${min}:${sec < 10 ? "0"+sec : sec}`;
+    }
+    
+    function showQuestion(){
+      const q = QUESTIONS[current];
+      questionContainer.textContent = `Pytanie ${current+1}: ${q.q}`;
+      answersDiv.innerHTML = "";
+      q.a.forEach((ans, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = ans;
+        btn.onclick = () => selectAnswer(i);
+        answersDiv.appendChild(btn);
+      });
     }
 
-    function updateTimerDisplay(){
-      function fmt(s){return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0')}
-      timerEl.textContent = practiceMode ? '—' : fmt(timeLeft);
-      timeTotal.textContent = practiceMode ? '—' : fmt(25*60);
-    }
-
-    function shuffleArray(a){
-      const arr = a.slice();
-      for(let i=arr.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
+    function selectAnswer(i){
+      const q = QUESTIONS[current];
+      const buttons = answersDiv.querySelectorAll("button");
+      buttons.forEach(b => b.disabled = true);
+      if(i === q.c){
+        buttons[i].classList.add("correct");
+        score++;
+      } else {
+        buttons[i].classList.add("wrong");
+        buttons[q.c].classList.add("correct");
       }
-      return arr;
     }
 
-    // keyboard navigation
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'ArrowRight') nextBtn.click();
-      if(e.key === 'ArrowLeft') prevBtn.click();
-      if(e.key === 'Enter'){
-        if(testArea.style.display==='none') startBtn.click();
-      }
-    });
+    function nextQuestion(){
+      current++;
+      if(current < QUESTIONS.length){ showQuestion(); }
+      else { endQuiz(); }
+    }
 
-    // Restore progress from localStorage (simple)
-    window.addEventListener('beforeunload', ()=>{
-      localStorage.setItem('egzaminator_answers', JSON.stringify(answers));
-    });
-    // try to load saved answers (optional)
-    try{ const saved = JSON.parse(localStorage.getItem('egzaminator_answers')||'{}'); if(saved) answers=saved; }catch(e){}
+    function endQuiz(){
+      clearInterval(timer);
+      quiz.classList.add("hidden");
+      resultDiv.classList.remove("hidden");
+      resultDiv.innerHTML = `<h2>Twój wynik: ${score}/${QUESTIONS.length}</h2>`;
+      if(!unlocked){ locked.classList.remove("hidden"); }
+    }
   </script>
-
-  <!--
-    ====== INSTRUKCJA (README) ======
-    Plik zawiera kompletny prototyp aplikacji. Poniżej znajdziesz instrukcję, jak opublikować stronę na GitHub Pages (0 zł), jak dodać własną domenę i krótki opis rozbudowy.
-
-    KROK 1 — Stwórz repozytorium na GitHub:
-      1. Zaloguj się na github.com (jeśli nie masz konta, załóż darmowe).
-      2. Stwórz nowe repozytorium np. "egzaminator-online".
-      3. Dodaj plik index.html (taki jak powyżej). Możesz wkleić cały tekst HTML jako jeden plik.
-
-    KROK 2 — Włącz GitHub Pages:
-      1. W repo przejdź do Settings -> Pages.
-      2. Wybierz branch: main (lub master) i folder: / (root).
-      3. Zapisz. Po chwili strona będzie dostępna pod https://<twoj-login>.github.io/<nazwa-repo/>
-
-    KROK 3 — (Opcjonalnie) własna domena:
-      1. Kup domenę u wybranego rejestratora (np. OVH, home.pl, nazwa.pl).
-      2. W ustawieniach GitHub Pages dodaj swoją domenę.
-      3. U rejestratora ustaw rekordy DNS (A i/lub CNAME) zgodnie z instrukcją GitHub.
-
-    KROK 4 — Statystyki i reklamy:
-      - Google Analytics: dodaj kod śledzenia do <head> (planujemy po zaakceptowaniu polityki prywatności).
-      - Google AdSense: wymaga własnej domeny, treści i przestrzegania zasad; proces zatwierdzenia może potrwać.
-
-    KROK 5 — Rozbudowa i monetyzacja:
-      - Dodaj więcej pytań: możesz przenieść QUESTIONS do osobnego pliku questions.json i ładować przez fetch.
-      - Wersja Premium: stwórz prosty przycisk płatności (Gumroad/PayPal) i po opłaceniu podmieniaj listę pytań na pełną.
-      - B2B: stwórz landing page dla OSK z ofertą licencji.
-
-    UWAGI PRAWNE:
-      - Pytania w tym pliku mają charakter ćwiczeniowy i zostały przygotowane tak, by nie naruszać praw autorskich oficjalnych arkuszy egzaminacyjnych. Jeśli chcesz używać oficjalnej bazy, sprawdź licencję i warunki WORD.
-
-    Jeśli chcesz, mogę:
-      - zrobić commit i opublikować stronę za Ciebie (jeśli podasz dostęp),
-      - rozdzielić QUESTIONS do osobnego questions.json i dać instrukcję jak dodać tryb premium,
-      - przygotować prosty formularz kontaktu i stronę sprzedażową (landing) dla OSK.
-  -->
 </body>
 </html>
